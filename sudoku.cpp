@@ -56,6 +56,7 @@ namespace Sudoku {
   }
   
   void Board::calculateGuesses() {
+    bool finished = false;
     for (int i = 0; i < grid.size(); i++) {
       for (int j = 0; j < grid[i].size(); j++) {
         if (grid[i][j] == 0) {
@@ -77,9 +78,13 @@ namespace Sudoku {
           // Check if puzzle is unsolvable
           if (retval.size() == 0) throw std::string("Puzzle is unsolvable!");
           guessGrid[i][j] = retval;
+          if (retval.size() > 1 && i != grid.size() - 1 && j != grid[i].size() - 1) finished = true;
+          else if (retval.size() > 1 && finished) finished = true;
+          else finished = false;
         } else guessGrid[i][j] = std::vector<int>();
       }
     }
+    if (finished) throw std::string("Puzzle is fully solved!");
   }
   
   bool Board::confirmGuesses() {
