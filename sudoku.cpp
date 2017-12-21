@@ -1,4 +1,5 @@
 #include "sudoku.hpp"
+//#include <iostream>
 
 namespace Sudoku {
 
@@ -7,31 +8,54 @@ namespace Sudoku {
   }
   
   Board::Board(std::string file) {
-    Json::Reader reader;
     Json::Value root;
-    bool pSuccess = reader.parse(file, root);
-    if (pSuccess) {
-      this = Board(root);
-    } else {
-      width = 0;
-      height = 0;
-      boxWidth = 0;
-      boxHeight = 0;
-    maxNum = 0;
-    }
+    std::ifstream in;
+    in.open(file.c_str());
+    in >> root;
+    in.close();
+    width = root["width"].asInt();
+    height = root["height"].asInt();
+    boxWidth = root["boxWidth"].asInt();
+    boxHeight = root["boxHeight"].asInt();
+    maxNum = root["maxNum"].asInt();
+    Json::Value g = root["maxNum"];
+    for (int i = 0; i < g.size(); i++) {
+      for (int j = 0; j < g[i].size(); j++) {
+        grid[i][j] = g[i][j].asInt();
+      }
+	}
   }
   
   Board::Board(const char * file) {
-    this = Board(std::string(file));
+    Json::Value root;
+    std::ifstream in;
+    in.open(file);
+    in >> root;
+    in.close();
+    width = root["width"].asInt();
+    height = root["height"].asInt();
+    boxWidth = root["boxWidth"].asInt();
+    boxHeight = root["boxHeight"].asInt();
+    maxNum = root["maxNum"].asInt();
+    Json::Value g = root["grid"];
+    //std::cout << g;
+    for (int i = 0; i < g.size(); i++) {
+      std::vector<int> temp;
+      for (int j = 0; j < g[i].size(); j++) {
+      	//std::cout << "i=" << i << " j=" << j << "\n";
+        temp.push_back(g[i][j].asInt());
+      }
+      grid.push_back(temp);
+    }
   }
 
-  Board::Board(Json::Value json) {
-    width = root['width'].asInt();
-    height = root['height'].asInt();
-    boxWidth = root['boxWidth'].asInt();
-    boxHeight = root['boxHeight'].asInt();
-    maxNum = root['maxNum'].asInt();
-    Json::Value g = root['maxNum'];
+  Board::Board(Json::Value root) {
+    width = root["width"].asInt();
+    height = root["height"].asInt();
+    boxWidth = root["boxWidth"].asInt();
+    boxHeight = root["boxHeight"].asInt();
+    maxNum = root["maxNum"].asInt();
+    Json::Value g = root["maxNum"];
     for (int i = 0; i < g.size(); i++) {
       for (int j = 0; j < g[i].size(); j++) {
         grid[i][j] = g[i][j].asInt();
@@ -42,10 +66,10 @@ namespace Sudoku {
 
   Box Board::getBox(int x, int y) {
     Box retval;
-    retval.x1 = x - (x % boxWidth) + 1;
-    retval.y1 = y - (y % boxHeight) + 1;
-    retval.x2 = retval.x1 + boxWidth - 1;
-    retval.y2 = retval.y1 + boxHeight - 1;
+    retval.x1 = x - (x % boxWidth);
+    retval.y1 = y - (y % boxHeight);
+    retval.x2 = retval.x1 + boxWidth - 2;
+    retval.y2 = retval.y1 + boxHeight - 2;
     return retval;
   }
   
@@ -57,31 +81,58 @@ namespace Sudoku {
   
   void Board::calculateGuesses() {
     bool finished = false;
+    //for (std::vector<int> i : grid) {for (int j : i) std::cout << j << ", "; std::cout << "\b\n";}
+    guessGrid.resize(6);
     for (int i = 0; i < grid.size(); i++) {
+      //std::cout << i << "\n";
+      guessGrid[i].resize(6);
       for (int j = 0; j < grid[i].size(); j++) {
         if (grid[i][j] == 0) {
           std::vector<int> retval = this->createTemp();
+          std::vector<int> remove;
           // First check the current row
-          for (int k = 0; k < width; k++)
-            for (int l = 0; l < retval.size(); l++)
-              if (retval[l] == grid[k][j]) retval.erase(retval.begin() + l);
+          for (int k = 0; k < width; k++) {
+            for (int l = 0; l < retval.size(); l++) {
+              //std::cout << "grid[" << k << "][" << j << "] = " << grid[k][j] << "\n";
+              if (0 != grid[k][j]) remove.push_back(grid[k][j]);
+            }
+          }
+         // std::cout << "\n";
           // Then check the current column
-          for (int m = 0; m < height; m++)
-            for (int n = 0; n < retval.size(); n++)
-              if (retval[n] == grid[i][m]) retval.erase(retval.begin() + n);
+          for (int m = 0; m < height; m++) {
+            for (int n = 0; n < retval.size(); n++) {
+              //std::cout << "grid[" << i << "][" << m << "] = " << grid[i][m] << "\n";
+              if (0 != grid[i][m]) remove.push_back(grid[i][m]);
+            }
+          }
           // Finally check the box
           Box current = this->getBox(i, j);
-          for (int o = current.x1; o <= current.x2; o++)
-            for (int p = current.y1; p <= current.y2; p++)
-              for (int q = 0; q < retval.size(); q++)
-                if (retval[q] == grid[o][p]) retval.erase(retval.begin() + q);
+          //std::cout << "Bounds: (" << current.x1 << ", " << current.y1 << "), (" << current.x2 << ", " << current.y2 << ")\n";
+          for (int o = current.x1; o <= current.x2; o++) {
+            for (int p = current.y1; p <= current.y2; p++) {
+              if (0 != grid[o][p]) remove.push_back(grid[o][p]);
+            }
+          }
+          //std::cout << "Removing: ";
+          for (int v = 0; v < remove.size(); v++) {
+            //std::cout << remove[v] << ", ";
+          	for (int w = 0; w < retval.size(); w++) {
+          	  if (remove[v] == retval[w]) retval.erase(retval.begin() + w);
+          	}
+          }
           // Check if puzzle is unsolvable
+          //std::cout << "Guesses for " << i << ", " << j << ": ";
+          //for (int guess : retval) std::cout << guess << ", ";
+       	  //std::cout << "\n";
           if (retval.size() == 0) throw std::string("Puzzle is unsolvable!");
           guessGrid[i][j] = retval;
           if (retval.size() > 1 && i != grid.size() - 1 && j != grid[i].size() - 1) finished = true;
           else if (retval.size() > 1 && finished) finished = true;
           else finished = false;
         } else guessGrid[i][j] = std::vector<int>();
+        //std::cout << "Guesses for " << i << ", " << j << ": ";
+        //for (int guess : guessGrid[i][j]) std::cout << guess << ", ";
+        //std::cout << "\n";
       }
     }
     if (finished) throw std::string("Puzzle is fully solved!");
@@ -105,15 +156,15 @@ namespace Sudoku {
     root["maxNum"] = maxNum;
     root["grid"] = Json::Value(Json::arrayValue);
     for (int i = 0; i < grid.size(); i++) {
-      root["grid"][i] = Json::Value(Json::arrayValue);
+      Json::Value temp(Json::arrayValue);
       for (int j = 0; j < grid[i].size(); j++) {
-        root["grid"][i][j] = grid[i][j];
+        temp.append(grid[i][j]);
       }
+      root["grid"].append(temp);
     }
-    Json::StreamWriter writer;
     std::ofstream out;
     out.open(file);
-    writer.write(root, &out);
+    out << root;
     out.close();
   }
   
