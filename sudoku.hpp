@@ -1,4 +1,4 @@
-#include <json/json.hpp>
+#include <json/json.h>
 #include <vector>
 #include <fstream>
 #include <string>
@@ -10,7 +10,7 @@ namespace Sudoku {
     int y1;
     int x2;
     int y2;
-  }
+  };
 
   class Board {
     public:
@@ -18,13 +18,13 @@ namespace Sudoku {
       int height;
       std::vector<std::vector<int> > grid;
       
-      Board(int width, int height, int boxcount);
+      Board(int width, int height, int boxw, int boxh);
       Board(std::string file);
       Board(const char * file);
-      Board(Json::Value json);
+      Board(Json::Value root);
       
       void calculateGuesses();
-      void confirmGuesses();
+      bool confirmGuesses();
       void saveBoard(const char * file);
       void saveBoard(std::string file);
     private:
@@ -35,5 +35,5 @@ namespace Sudoku {
       
       Box getBox(int x, int y);
       std::vector<int> createTemp();
-  }
+  };
 }
