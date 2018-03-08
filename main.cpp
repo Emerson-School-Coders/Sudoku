@@ -22,7 +22,7 @@ int main(int argc, const char * argv[]) {
   std::cout << "Trying new algorithm\n";
   while (true) {
     board.calculateGuesses_new();
-    int r = board.confirmGuesses_new()
+    int r = board.confirmGuesses_new();
     if (r == 1) {
       std::cout << "Puzzle unsolvable!\n";
       retval = 1;
