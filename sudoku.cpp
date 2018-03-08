@@ -186,7 +186,8 @@ namespace Sudoku {
     return true;
   }
 	
-	bool Board::confirmGuesses_new() {
+	int Board::confirmGuesses_new() {
+		int ret = 2;
 		for (int i = 0; i < grid.size(); i++) {
 			for (int j = 0; j < grid[i].size(); j++) {
 				std::vector<int> reqs = row_requirements[i];
@@ -203,11 +204,14 @@ namespace Sudoku {
 							if (r == bc)
 								keepb.push_back(r);
 				reqs = keepc;
-				if (reqs.size() == 1) grid[i][j] = reqs[0];
-				else if (reqs.size() == 0) return false;
+				if (reqs.size() == 1) {
+					grid[i][j] = reqs[0];
+					ret = 0;
+				}
+				else if (reqs.size() == 0) return 1;
 			}
 		}
-		return true;
+		return ret;
 	}
   
   void Board::saveBoard(const char * file) {
