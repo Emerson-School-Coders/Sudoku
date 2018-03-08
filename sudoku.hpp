@@ -32,6 +32,10 @@ namespace Sudoku {
       int boxHeight;
       int maxNum;
       std::vector<std::vector<std::vector<int> > > guessGrid;
+    
+      std::vector<std::vector<int> > row_requirements;
+      std::vector<std::vector<int> > column_requirements;
+      std::vector<std::vector<std::vector<int> > > box_requirements;
       
       Box getBox(int x, int y);
       std::vector<int> createTemp();
