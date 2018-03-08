@@ -172,7 +172,7 @@ namespace Sudoku {
 						for (int r = 0; r < reqs.size(); r++) 
 							if (grid[i+k][j+l] == reqs[r]) 
 								reqs.erase(reqs.begin() + r);
-				box_requirements[i/boxWidth][j/boxHeight] = reqs;
+				box_requirements[floordiv(i, boxWidth)][floordiv(j, boxHeight)] = reqs;
 			}
 		}
 	}
@@ -198,11 +198,10 @@ namespace Sudoku {
 							keepc.push_back(r);
 				reqs = keepc;
 				std::vector<int> keepb;
-				for (std::vector<int> br : box_requirements[floordiv(i, boxWidth)])
-					for (int bc : br[floordiv(j, boxHeight)])
-						for (int r : reqs)
-							if (r == bc)
-								keepb.push_back(r);
+				for (int bc : box_requirements[floordiv(i, boxWidth)][floordiv(j, boxHeight)])
+					for (int r : reqs)
+						if (r == bc)
+							keepb.push_back(r);
 				reqs = keepc;
 				if (reqs.size() == 1) {
 					grid[i][j] = reqs[0];
