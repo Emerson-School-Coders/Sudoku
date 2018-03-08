@@ -21,14 +21,13 @@ int main(int argc, const char * argv[]) {
   }
   std::cout << "Trying new algorithm\n";
   while (true) {
-    try {
-      board.calculateGuesses_new();
-    } catch (std::string err) {
-      std::cout << err << std::endl;
+    board.calculateGuesses_new();
+    int r = board.confirmGuesses_new()
+    if (r == 1) {
+      std::cout << "Puzzle unsolvable!\n";
       retval = 1;
       break;
-    }
-    if (board.confirmGuesses_new()) {
+    } else if (r == 2) {
       std::cout << "Puzzle solved!\n";
       retval = 0;
       break;
