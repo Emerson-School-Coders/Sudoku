@@ -23,8 +23,10 @@ namespace Sudoku {
       Board(const char * file);
       Board(Json::Value root);
       
-      void calculateGuesses();
-      bool confirmGuesses();
+      void calculateGuesses_old();
+      bool confirmGuesses_old();
+      void calculateGuesses_new();
+      int calculateGuesses_new();
       void saveBoard(const char * file);
       void saveBoard(std::string file);
     private:
