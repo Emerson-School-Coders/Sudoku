@@ -86,10 +86,10 @@ namespace Sudoku {
   void Board::calculateGuesses_old() {
     bool finished = false;
     //for (std::vector<int> i : grid) {for (int j : i) std::cout << j << ", "; std::cout << "\b\n";}
-    guessGrid.resize(6);
+    guessGrid.resize(boxWidth);
     for (int i = 0; i < grid.size(); i++) {
       //std::cout << i << "\n";
-      guessGrid[i].resize(6);
+      guessGrid[i].resize(boxHeight);
       for (int j = 0; j < grid[i].size(); j++) {
         if (grid[i][j] == 0) {
           std::vector<int> retval = this->createTemp();
