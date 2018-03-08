@@ -5,8 +5,10 @@ int main(int argc, const char * argv[]) {
   Sudoku::Board board(argv[1]);
   int retval = 2;
   std::cout << "Trying old algorithm\n";
+  int g = 1;
   while (true) {
     try {
+      std::cout << "Guess #" << g << "\n";
       board.calculateGuesses_old();
     } catch (std::string err) {
       std::cout << err << std::endl;
@@ -20,7 +22,9 @@ int main(int argc, const char * argv[]) {
     }
   }
   std::cout << "Trying new algorithm\n";
+  g = 1;
   while (true) {
+    std::cout << "Guess #" << g << "\n";
     board.calculateGuesses_new();
     int r = board.confirmGuesses_new();
     if (r == 1) {
