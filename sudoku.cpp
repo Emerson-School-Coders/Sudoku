@@ -1,6 +1,10 @@
 #include "sudoku.hpp"
 //#include <iostream>
 
+int floordiv(int divisor, int dividend) {
+	return (divisor - (divisor % dividend)) / dividend;
+}
+
 namespace Sudoku {
 
   Board::Board(int w, int h, int boxw, int boxh): width(w), height(h), boxWidth(boxw), boxHeight(boxh) {
@@ -79,7 +83,7 @@ namespace Sudoku {
     return retval;
   }
   
-  void Board::calculateGuesses() {
+  void Board::calculateGuesses_old() {
     bool finished = false;
     //for (std::vector<int> i : grid) {for (int j : i) std::cout << j << ", "; std::cout << "\b\n";}
     guessGrid.resize(6);
@@ -137,8 +141,43 @@ namespace Sudoku {
     }
     if (finished) throw std::string("Puzzle is fully solved!");
   }
+
+	void Board::calculateGuesses_new() {
+		// Get required numbers for rows
+		for (int i = 0; i < grid.size(); i++) {
+			std::vector<int> reqs;
+			for (int f = 1; f <= maxNum; f++) reqs.push_back(f);
+			for (int j : grid[i]) 
+				for (int r = 0; r < reqs.size(); r++) 
+					if (j == reqs[r]) 
+						reqs.erase(reqs.begin() + r--);
+			row_requirements[i] = reqs;
+		}
+		// Get required numbers for columns
+		for (int i = 0; i < grid[0].size(); i++) {
+			std::vector<int> reqs;
+			for (int f = 1; f <= maxNum; f++) reqs.push_back(f);
+			for (int j = 0; j < grid.size(); j++) 
+				for (int r = 0; r < reqs.size(); r++) 
+					if (grid[j][i] == reqs[r]) 
+						reqs.erase(reqs.begin() + r--);
+			column_requirements[i] = reqs;
+		}
+		for (int i = 0; i < grid.size(); i += boxWidth) {
+			for (int j = 0; j < grid[i].size(); j += boxHeight) {
+				std::vector<int> reqs;
+				for (int f = 1; f <= maxNum; f++) reqs.push_back(f);
+				for (int k = 0; k < boxWidth; k++) 
+					for (int l = 0; l < boxHeight; l++) 
+						for (int r = 0; r < reqs.size(); r++) 
+							if (grid[i+k][j+l] == reqs[r]) 
+								reqs.erase(reqs.begin() + r);
+				box_requirements[i/boxWidth][j/boxHeight] = reqs;
+			}
+		}
+	}
   
-  bool Board::confirmGuesses() {
+  bool Board::confirmGuesses_old() {
     for (int i = 0; i < guessGrid.size(); i++)
       for (int j = 0; j < guessGrid[i].size(); j++)
         if (guessGrid[i][j].size() == 1) grid[i][j] = guessGrid[i][j][0];
@@ -146,6 +185,10 @@ namespace Sudoku {
     for (std::vector<int> k : grid) for (int l : k) if (l == 0) return false;
     return true;
   }
+	
+	bool Board::confirmGuesses_new() {
+		
+	}
   
   void Board::saveBoard(const char * file) {
     Json::Value root(Json::objectValue);
