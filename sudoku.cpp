@@ -187,7 +187,27 @@ namespace Sudoku {
   }
 	
 	bool Board::confirmGuesses_new() {
-		
+		for (int i = 0; i < grid.size(); i++) {
+			for (int j = 0; j < grid[i].size(); j++) {
+				std::vector<int> reqs = row_requirements[i];
+				std::vector<int> keepc;
+				for (int c : column_requirements[j])
+					for (int r : reqs) 
+						if (r == c) 
+							keepc.push_back(r);
+				reqs = keepc;
+				std::vector<int> keepb;
+				for (std::vector<int> br : box_requirements[floordiv(i, boxWidth)])
+					for (int bc : br[floordiv(j, boxHeight)])
+						for (int r : reqs)
+							if (r == bc)
+								keepb.push_back(r);
+				reqs = keepc;
+				if (reqs.size() == 1) grid[i][j] = reqs[0];
+				else if (reqs.size() == 0) return false;
+			}
+		}
+		return true;
 	}
   
   void Board::saveBoard(const char * file) {
