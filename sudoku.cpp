@@ -1,6 +1,12 @@
 #include "sudoku.hpp"
 //#include <iostream>
 
+void print(std::string text) {
+#ifdef _GLIBCXX_IOSTREAM
+    std::cout << text << "\n";
+#endif
+}
+
 int floordiv(int divisor, int dividend) {
 	return (divisor - (divisor % dividend)) / dividend;
 }
@@ -86,10 +92,10 @@ namespace Sudoku {
   void Board::calculateGuesses_old() {
     bool finished = false;
     //for (std::vector<int> i : grid) {for (int j : i) std::cout << j << ", "; std::cout << "\b\n";}
-    guessGrid.resize(boxWidth);
+    guessGrid.resize(width);
     for (int i = 0; i < grid.size(); i++) {
       //std::cout << i << "\n";
-      guessGrid[i].resize(boxHeight);
+      guessGrid[i].resize(height);
       for (int j = 0; j < grid[i].size(); j++) {
         if (grid[i][j] == 0) {
           std::vector<int> retval = this->createTemp();
@@ -143,17 +149,22 @@ namespace Sudoku {
   }
 
 	void Board::calculateGuesses_new() {
-		// Get required numbers for rows
+        row_requirements.resize(height);
+        column_requirements.resize(width);
+        box_requirements.resize(floordiv(height, boxHeight));
+        for (int i = 0; i < box_requirements.size(); i++) box_requirements[i].resize(floordiv(width, boxWidth));
+		print("Get required numbers for rows");
 		for (int i = 0; i < grid.size(); i++) {
-			std::vector<int> reqs;
-			for (int f = 1; f <= maxNum; f++) reqs.push_back(f);
+			std::vector<int> reqs = createTemp();
 			for (int j : grid[i]) 
 				for (int r = 0; r < reqs.size(); r++) 
 					if (j == reqs[r]) 
 						reqs.erase(reqs.begin() + r--);
+            //print("Done 1");
 			row_requirements[i] = reqs;
+            //print("Done 2");
 		}
-		// Get required numbers for columns
+		print("Get required numbers for columns");
 		for (int i = 0; i < grid[0].size(); i++) {
 			std::vector<int> reqs;
 			for (int f = 1; f <= maxNum; f++) reqs.push_back(f);
@@ -163,15 +174,24 @@ namespace Sudoku {
 						reqs.erase(reqs.begin() + r--);
 			column_requirements[i] = reqs;
 		}
+		print("Get required numbers for boxes");
 		for (int i = 0; i < grid.size(); i += boxWidth) {
 			for (int j = 0; j < grid[i].size(); j += boxHeight) {
+                print("Box is " + std::to_string(floordiv(i, boxWidth)) + ", " + std::to_string(floordiv(j, boxHeight)));
 				std::vector<int> reqs;
 				for (int f = 1; f <= maxNum; f++) reqs.push_back(f);
+                std::string found = "Found ";
 				for (int k = 0; k < boxWidth; k++) 
 					for (int l = 0; l < boxHeight; l++) 
 						for (int r = 0; r < reqs.size(); r++) 
-							if (grid[i+k][j+l] == reqs[r]) 
+							if (grid[i+k][j+l] == reqs[r]) {
+                                found += std::to_string(reqs[r]) + ", ";
 								reqs.erase(reqs.begin() + r);
+                            }
+                std::string notfound = "Did not find ";
+                for (int n : reqs) notfound += std::to_string(n) + ", ";
+                print(found);
+                print(notfound);
 				box_requirements[floordiv(i, boxWidth)][floordiv(j, boxHeight)] = reqs;
 			}
 		}
@@ -190,24 +210,30 @@ namespace Sudoku {
 		int ret = 2;
 		for (int i = 0; i < grid.size(); i++) {
 			for (int j = 0; j < grid[i].size(); j++) {
-				std::vector<int> reqs = row_requirements[i];
-				std::vector<int> keepc;
-				for (int c : column_requirements[j])
-					for (int r : reqs) 
-						if (r == c) 
-							keepc.push_back(r);
-				reqs = keepc;
-				std::vector<int> keepb;
-				for (int bc : box_requirements[floordiv(i, boxWidth)][floordiv(j, boxHeight)])
-					for (int r : reqs)
-						if (r == bc)
-							keepb.push_back(r);
-				reqs = keepc;
-				if (reqs.size() == 1) {
-					grid[i][j] = reqs[0];
-					ret = 0;
-				}
-				else if (reqs.size() == 0) return 1;
+                if (grid[i][j] == 0) {
+                    std::vector<int> reqs = row_requirements[i];
+                    std::vector<int> keepc;
+                    for (int c : column_requirements[j])
+                        for (int r : reqs) 
+                            if (r == c) 
+                                keepc.push_back(r);
+                    reqs = keepc;
+                    std::vector<int> keepb;
+                    for (int bc : box_requirements[floordiv(i, boxWidth)][floordiv(j, boxHeight)])
+                        for (int r : reqs)
+                            if (r == bc)
+                                keepb.push_back(r);
+                    reqs = keepb;
+                    print("Box is " + std::to_string(floordiv(i, boxWidth)) + ", " + std::to_string(floordiv(j, boxHeight)));
+                    std::string guesses = "Guesses for grid[" + std::to_string(i) + "][" + std::to_string(j) + "]: ";
+                    for (int n : reqs) guesses += std::to_string(n) + ", ";
+                    print(guesses + "\b\b");
+                    if (reqs.size() == 1) {
+                        grid[i][j] = reqs[0];
+                        ret = 0;
+                    }
+                    else if (reqs.size() == 0) return 1;
+                }
 			}
 		}
 		return ret;

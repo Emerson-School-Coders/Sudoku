@@ -20,6 +20,7 @@ int main(int argc, const char * argv[]) {
       retval = 0;
       break;
     }
+    g++;
   }
   std::cout << "Trying new algorithm\n";
   g = 1;
@@ -36,6 +37,7 @@ int main(int argc, const char * argv[]) {
       retval = 0;
       break;
     }
+    g++;
   }
   board.saveBoard("result.json");
   return retval;
