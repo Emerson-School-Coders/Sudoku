@@ -2,6 +2,10 @@
 #include "../src/sudoku.hpp"
 
 int main(int argc, const char * argv[]) {
+  if (argc < 2) {
+    std::cout << "Usage: " << argv[0] << " <file.json>\n";
+    return 1;
+  }
   Sudoku::Board board(argv[1]);
   int retval = 2;
   std::cout << "Trying old algorithm\n";
