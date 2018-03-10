@@ -2,6 +2,7 @@
 #include <vector>
 #include <fstream>
 #include <string>
+#include <utility>
 
 namespace Sudoku {
   
@@ -23,21 +24,26 @@ namespace Sudoku {
       Board(const char * file);
       Board(Json::Value root);
       
-      void calculateGuesses_old();
-      bool confirmGuesses_old();
-      void calculateGuesses_new();
-      int confirmGuesses_new();
+      void calculate_guess();
+      bool confirm_guess();
+      void calculate_eliminate();
+      int confirm_eliminate();
+      void calculate_crosshatch();
+      int confirm_crosshatch();
       void saveBoard(const char * file);
       void saveBoard(std::string file);
     private:
       int boxWidth;
       int boxHeight;
       int maxNum;
+      bool unsolv;
       std::vector<std::vector<std::vector<int> > > guessGrid;
     
       std::vector<std::vector<int> > row_requirements;
       std::vector<std::vector<int> > column_requirements;
       std::vector<std::vector<std::vector<int> > > box_requirements;
+      
+      std::vector<std::vector<std::vector<std::vector<std::pair<int, int> > > > > crosshatch;
       
       Box getBox(int x, int y);
       std::vector<int> createTemp();
